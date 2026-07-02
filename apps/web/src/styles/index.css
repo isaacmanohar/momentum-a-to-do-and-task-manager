@@ -1,0 +1,305 @@
+@import "tailwindcss";
+
+/* ============================================
+   Life OS — Design System
+   Premium design tokens inspired by Linear, 
+   Arc Browser, and Apple design language
+   ============================================ */
+
+@theme {
+  /* --- Colors --- */
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0b;
+  --color-card: #ffffff;
+  --color-card-foreground: #0a0a0b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0a0a0b;
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: #18181b;
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #71717a;
+  --color-accent: #f4f4f5;
+  --color-accent-foreground: #18181b;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+  --color-ring: #6366f1;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+
+  /* --- Gradients --- */
+  --color-gradient-start: #6366f1;
+  --color-gradient-end: #8b5cf6;
+
+  /* --- Sidebar --- */
+  --color-sidebar: #fafafa;
+  --color-sidebar-foreground: #0a0a0b;
+  --color-sidebar-border: #e4e4e7;
+  --color-sidebar-accent: #f4f4f5;
+  --color-sidebar-accent-foreground: #18181b;
+
+  /* --- Typography --- */
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+
+  /* --- Radius --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-full: 9999px;
+}
+
+/* Dark Theme */
+.dark {
+  --color-background: #0a0a0b;
+  --color-foreground: #fafafa;
+  --color-card: #131316;
+  --color-card-foreground: #fafafa;
+  --color-popover: #131316;
+  --color-popover-foreground: #fafafa;
+  --color-primary: #818cf8;
+  --color-primary-foreground: #0a0a0b;
+  --color-secondary: #1e1e24;
+  --color-secondary-foreground: #fafafa;
+  --color-muted: #1e1e24;
+  --color-muted-foreground: #a1a1aa;
+  --color-accent: #1e1e24;
+  --color-accent-foreground: #fafafa;
+  --color-destructive: #f87171;
+  --color-destructive-foreground: #0a0a0b;
+  --color-border: #27272a;
+  --color-input: #27272a;
+  --color-ring: #818cf8;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-info: #60a5fa;
+
+  --color-sidebar: #0f0f12;
+  --color-sidebar-foreground: #fafafa;
+  --color-sidebar-border: #1e1e24;
+  --color-sidebar-accent: #1a1a20;
+  --color-sidebar-accent-foreground: #fafafa;
+}
+
+/* ---- Global Styles ---- */
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Scrollbar ---- */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
+}
+
+/* ---- Glassmorphism Utilities ---- */
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .glass {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ---- Animation Utilities ---- */
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ---- Gradient Text ---- */
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-gradient-start), var(--color-gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Glow Effects ---- */
+
+.glow-primary {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+.dark .glow-primary {
+  box-shadow: 0 0 20px rgba(129, 140, 248, 0.1);
+}
+
+/* ---- Priority Colors ---- */
+
+.priority-urgent { color: #ef4444; }
+.priority-high { color: #f97316; }
+.priority-medium { color: #eab308; }
+.priority-low { color: #22c55e; }
+.priority-none { color: var(--color-muted-foreground); }
+
+/* ---- TipTap Editor ---- */
+
+.tiptap {
+  outline: none;
+  min-height: 200px;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-muted-foreground);
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem; }
+.tiptap h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+.tiptap h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+.tiptap p { margin-bottom: 0.5rem; line-height: 1.7; }
+.tiptap ul, .tiptap ol { padding-left: 1.5rem; margin-bottom: 0.5rem; }
+.tiptap li { margin-bottom: 0.25rem; }
+.tiptap blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1rem;
+  color: var(--color-muted-foreground);
+  margin-bottom: 0.5rem;
+}
+.tiptap code {
+  background: var(--color-muted);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+.tiptap pre {
+  background: var(--color-muted);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  overflow-x: auto;
+}
+.tiptap pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Task list checkboxes in TipTap */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li input[type="checkbox"] {
+  margin-top: 0.25rem;
+  accent-color: var(--color-primary);
+}
+
+/* ---- FullCalendar Overrides ---- */
+
+.fc {
+  --fc-border-color: var(--color-border);
+  --fc-button-bg-color: var(--color-primary);
+  --fc-button-border-color: var(--color-primary);
+  --fc-button-hover-bg-color: var(--color-gradient-end);
+  --fc-button-hover-border-color: var(--color-gradient-end);
+  --fc-today-bg-color: rgba(99, 102, 241, 0.05);
+  --fc-event-border-color: transparent;
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--color-muted);
+  font-family: var(--font-sans) !important;
+}
+
+.dark .fc {
+  --fc-today-bg-color: rgba(129, 140, 248, 0.05);
+}
+
+.fc .fc-button {
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+}
+
+.fc .fc-event {
+  border-radius: var(--radius-sm) !important;
+  font-size: 0.8125rem !important;
+  padding: 2px 6px !important;
+}
+
+/* ---- Selection ---- */
+
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.dark ::selection {
+  background: rgba(129, 140, 248, 0.3);
+}
