@@ -160,7 +160,7 @@ export function Dashboard() {
           </div>
           
           <div className="space-y-4">
-            {upcomingTasks.map((task) => (
+            {upcomingTasks.map((task: any) => (
               <div key={task.id} className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50">
                 <button className="mt-0.5 text-muted-foreground hover:text-primary">
                   <Circle size={18} />

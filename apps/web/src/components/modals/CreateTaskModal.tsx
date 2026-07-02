@@ -16,7 +16,7 @@ const taskSchema = z.object({
   dueDate: z.string().optional(),
 });
 
-type TaskFormData = z.infer<typeof taskSchema>;
+type TaskFormData = z.input<typeof taskSchema>;
 
 export function CreateTaskModal() {
   const { taskModalOpen, setTaskModalOpen, taskToEdit, setTaskToEdit } = useUIStore();
