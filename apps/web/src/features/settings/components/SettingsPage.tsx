@@ -82,7 +82,7 @@ export function SettingsPage() {
       {/* Settings Content Area */}
       <div className="flex-1 overflow-y-auto p-8 max-w-4xl">
         {activeTab === 'profile' && <ProfileSettings user={user} updateProfile={updateProfile} />}
-        {activeTab === 'account' && <AccountSettings user={user} />}
+        {activeTab === 'account' && <AccountSettings />}
         {activeTab === 'appearance' && <AppearanceSettings user={user} updateProfile={updateProfile} />}
       </div>
     </div>
