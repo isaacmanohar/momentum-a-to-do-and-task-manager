@@ -109,9 +109,14 @@ export async function register(input: RegisterInput) {
 }
 
 export async function login(input: LoginInput) {
-  // Find user
-  const user = await prisma.user.findUnique({
-    where: { email: input.email },
+  // Find user by email or name
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: input.email },
+        { name: input.email }
+      ]
+    },
   });
 
   if (!user) {

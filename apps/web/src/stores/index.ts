@@ -42,7 +42,11 @@ interface UIStore {
   aiPanelOpen: boolean;
   projectModalOpen: boolean;
   taskModalOpen: boolean;
+  habitModalOpen: boolean;
+  goalModalOpen: boolean;
   taskToEdit: any | null;
+  goalToEdit: any | null;
+  defaultProjectId: string | null;
   toggleSidebar: () => void;
   toggleSidebarCollapse: () => void;
   setCommandPaletteOpen: (open: boolean) => void;
@@ -50,7 +54,11 @@ interface UIStore {
   setAiPanelOpen: (open: boolean) => void;
   setProjectModalOpen: (open: boolean) => void;
   setTaskModalOpen: (open: boolean) => void;
+  setHabitModalOpen: (open: boolean) => void;
+  setGoalModalOpen: (open: boolean) => void;
   setTaskToEdit: (task: any | null) => void;
+  setGoalToEdit: (goal: any | null) => void;
+  setDefaultProjectId: (id: string | null) => void;
 }
 
 export const useUIStore = create<UIStore>()((set) => ({
@@ -61,7 +69,11 @@ export const useUIStore = create<UIStore>()((set) => ({
   aiPanelOpen: false,
   projectModalOpen: false,
   taskModalOpen: false,
+  habitModalOpen: false,
+  goalModalOpen: false,
   taskToEdit: null,
+  goalToEdit: null,
+  defaultProjectId: null,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   toggleSidebarCollapse: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
@@ -69,7 +81,11 @@ export const useUIStore = create<UIStore>()((set) => ({
   setAiPanelOpen: (open) => set({ aiPanelOpen: open }),
   setProjectModalOpen: (open) => set({ projectModalOpen: open }),
   setTaskModalOpen: (open) => set({ taskModalOpen: open }),
+  setHabitModalOpen: (open) => set({ habitModalOpen: open }),
+  setGoalModalOpen: (open) => set({ goalModalOpen: open }),
   setTaskToEdit: (task) => set({ taskToEdit: task }),
+  setGoalToEdit: (goal) => set({ goalToEdit: goal }),
+  setDefaultProjectId: (id) => set({ defaultProjectId: id }),
 }));
 
 // ---- Auth Store ----

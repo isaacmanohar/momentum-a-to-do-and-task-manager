@@ -2,12 +2,12 @@ import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api-client';
 import { useUIStore } from '@/stores';
-import { Trash2, Edit2, CheckCircle2, Circle } from 'lucide-react';
+import { Trash2, Edit2, CheckCircle2, Circle, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
-  const { setTaskModalOpen, setTaskToEdit } = useUIStore();
+  const { setTaskModalOpen, setTaskToEdit, setDefaultProjectId } = useUIStore();
   const queryClient = useQueryClient();
 
   const { data: project, isLoading } = useQuery({
@@ -62,7 +62,20 @@ export function ProjectDetail() {
       </div>
 
       <div className="flex-1 space-y-3 mt-4">
-        <h3 className="font-semibold text-lg">Tasks</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-lg">Tasks</h3>
+          {project.tasks && project.tasks.length > 0 && (
+            <button 
+              onClick={() => {
+                setDefaultProjectId(id || null);
+                setTaskModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+            >
+              <Plus size={14} /> Add Task
+            </button>
+          )}
+        </div>
         {project.tasks && project.tasks.length > 0 ? (
           project.tasks.map((task: any) => {
             const isDone = task.status === 'DONE';
@@ -119,7 +132,10 @@ export function ProjectDetail() {
           <div className="flex flex-col items-center justify-center py-12 border border-dashed rounded-xl bg-card/50">
             <p className="text-muted-foreground mb-4">No tasks in this project yet.</p>
             <button 
-              onClick={() => setTaskModalOpen(true)}
+              onClick={() => {
+                setDefaultProjectId(id || null);
+                setTaskModalOpen(true);
+              }}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               + Add Task

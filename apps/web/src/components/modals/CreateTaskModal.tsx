@@ -19,7 +19,7 @@ const taskSchema = z.object({
 type TaskFormData = z.input<typeof taskSchema>;
 
 export function CreateTaskModal() {
-  const { taskModalOpen, setTaskModalOpen, taskToEdit, setTaskToEdit } = useUIStore();
+  const { taskModalOpen, setTaskModalOpen, taskToEdit, setTaskToEdit, defaultProjectId, setDefaultProjectId } = useUIStore();
   const queryClient = useQueryClient();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<TaskFormData>({
@@ -40,9 +40,9 @@ export function CreateTaskModal() {
         dueDate: taskToEdit.dueDate ? taskToEdit.dueDate.substring(0, 10) : '',
       });
     } else if (taskModalOpen && !taskToEdit) {
-      reset({ title: '', description: '', priority: 'NONE', projectId: '', dueDate: '' });
+      reset({ title: '', description: '', priority: 'NONE', projectId: defaultProjectId || '', dueDate: '' });
     }
-  }, [taskModalOpen, taskToEdit, reset]);
+  }, [taskModalOpen, taskToEdit, defaultProjectId, reset]);
 
   const { data: projectsResponse } = useQuery({
     queryKey: ['projects'],
@@ -85,6 +85,7 @@ export function CreateTaskModal() {
     setTaskModalOpen(false);
     setTimeout(() => {
       setTaskToEdit(null);
+      setDefaultProjectId(null);
       reset({ title: '', description: '', priority: 'NONE', projectId: '', dueDate: '' });
     }, 200);
   };
@@ -132,9 +133,9 @@ export function CreateTaskModal() {
                 {...register('projectId')}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                <option value="">Inbox</option>
+                <option value="" className="bg-background text-foreground">Inbox</option>
                 {projects.map((p: any) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                  <option key={p.id} value={p.id} className="bg-background text-foreground">{p.name}</option>
                 ))}
               </select>
             </div>
@@ -147,11 +148,11 @@ export function CreateTaskModal() {
                 {...register('priority')}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                <option value="NONE">None</option>
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
+                <option value="NONE" className="bg-background text-foreground">None</option>
+                <option value="LOW" className="bg-background text-foreground">Low</option>
+                <option value="MEDIUM" className="bg-background text-foreground">Medium</option>
+                <option value="HIGH" className="bg-background text-foreground">High</option>
+                <option value="URGENT" className="bg-background text-foreground">Urgent</option>
               </select>
             </div>
             

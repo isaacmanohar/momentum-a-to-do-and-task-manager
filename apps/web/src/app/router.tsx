@@ -12,9 +12,10 @@ import { ProjectDetail } from '../features/projects/components/ProjectDetail';
 import { SettingsPage as Settings } from '../features/settings/components/SettingsPage';
 import { LandingPage } from '../features/landing/components/LandingPage';
 
+import { Register } from '../features/auth/components/Register';
+
 // Lazy load components (we'll implement these next)
-const Register = () => <div className="flex h-screen items-center justify-center">Register Page</div>;
-const Analytics = () => <div className="p-8">Analytics Page</div>;
+import { AnalyticsPage as Analytics } from '../features/analytics/components/AnalyticsPage';
 const NotFound = () => <div className="flex h-full items-center justify-center flex-col gap-4"><h2>404 - Page Not Found</h2><a href="/" className="text-primary hover:underline">Go Home</a></div>;
 
 

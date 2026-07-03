@@ -72,8 +72,12 @@ async function listHabits(req: Request, res: Response, next: NextFunction) {
 async function createHabit(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = getUserId(req);
+    const data = { ...req.body };
+    if (Array.isArray(data.customDays)) {
+      data.customDays = JSON.stringify(data.customDays);
+    }
     const habit = await prisma.habit.create({
-      data: { ...req.body, userId },
+      data: { ...data, userId },
     });
     res.status(201).json({ ...habit, completedToday: false, todayCount: 0 });
   } catch (error) { next(error); }
@@ -87,9 +91,14 @@ async function updateHabit(req: Request, res: Response, next: NextFunction) {
     });
     if (!existing) throw new NotFoundError('Habit');
 
+    const data = { ...req.body };
+    if (Array.isArray(data.customDays)) {
+      data.customDays = JSON.stringify(data.customDays);
+    }
+
     const habit = await prisma.habit.update({
       where: { id: req.params.id },
-      data: req.body,
+      data,
     });
     res.json(habit);
   } catch (error) { next(error); }

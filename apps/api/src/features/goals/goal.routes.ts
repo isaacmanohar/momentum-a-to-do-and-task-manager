@@ -31,6 +31,12 @@ const updateGoalSchema = z.object({
   targetDate: z.string().datetime().nullable().optional(),
   progress: z.number().min(0).max(100).optional(),
   color: z.string().optional(),
+  milestones: z.array(z.object({
+    id: z.string().optional(),
+    title: z.string().min(1).max(300),
+    sortOrder: z.number().int().optional(),
+    isCompleted: z.boolean().optional(),
+  })).optional(),
 });
 
 const milestoneSchema = z.object({
@@ -108,9 +114,45 @@ async function updateGoal(req: Request, res: Response, next: NextFunction) {
     const data = { ...req.body };
     if (data.targetDate) data.targetDate = new Date(data.targetDate);
 
+    let progress = data.progress;
+    
+    if (data.milestones) {
+      const incomingIds = data.milestones.filter((m: any) => m.id).map((m: any) => m.id);
+      
+      // Delete removed milestones
+      await prisma.goalMilestone.deleteMany({
+        where: {
+          goalId: req.params.id,
+          id: { notIn: incomingIds }
+        }
+      });
+
+      // Upsert milestones
+      for (let i = 0; i < data.milestones.length; i++) {
+        const m = data.milestones[i];
+        if (m.id) {
+          await prisma.goalMilestone.update({
+            where: { id: m.id },
+            data: { title: m.title, sortOrder: m.sortOrder ?? i }
+          });
+        } else {
+          await prisma.goalMilestone.create({
+            data: { title: m.title, sortOrder: m.sortOrder ?? i, goalId: req.params.id }
+          });
+        }
+      }
+      
+      delete data.milestones;
+      
+      // Recalculate progress
+      const allMilestones = await prisma.goalMilestone.findMany({ where: { goalId: req.params.id } });
+      const completed = allMilestones.filter((m) => m.isCompleted);
+      progress = allMilestones.length > 0 ? Math.round((completed.length / allMilestones.length) * 100) : 0;
+    }
+
     const goal = await prisma.goal.update({
       where: { id: req.params.id },
-      data,
+      data: { ...data, progress: progress !== undefined ? progress : existing.progress },
       include: { milestones: { orderBy: { sortOrder: 'asc' } } },
     });
     res.json(goal);

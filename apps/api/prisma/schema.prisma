@@ -75,6 +75,14 @@ enum NotificationType {
   ACHIEVEMENT_UNLOCKED
   STREAK_AT_RISK
   SYSTEM
+  WORKSPACE_INVITE
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
 
 // ---- MODELS ----
@@ -120,8 +128,63 @@ model User {
   pomodoroLogs      PomodoroLog[]
   connectedAccounts ConnectedAccount[]
   deviceSessions    DeviceSession[]
+  workspaceMembers  WorkspaceMember[]
 
   @@map("users")
+}
+
+model Workspace {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  icon        String?
+  isPersonal  Boolean  @default(false) @map("is_personal")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members     WorkspaceMember[]
+  invites     WorkspaceInvite[]
+  tasks       Task[]
+  projects    Project[]
+  notes       Note[]
+  goals       Goal[]
+  habits      Habit[]
+  tags        Tag[]
+  calendarEvents CalendarEvent[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(uuid())
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime      @default(now()) @map("joined_at")
+
+  userId      String        @map("user_id")
+  workspaceId String        @map("workspace_id")
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@map("workspace_members")
+}
+
+model WorkspaceInvite {
+  id          String        @id @default(uuid())
+  email       String
+  token       String        @unique
+  role        WorkspaceRole @default(MEMBER)
+  expiresAt   DateTime      @map("expires_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  workspaceId String        @map("workspace_id")
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([workspaceId])
+  @@map("workspace_invites")
 }
 
 model ConnectedAccount {
@@ -193,15 +256,17 @@ model Task {
   deletedAt         DateTime?         @map("deleted_at")
 
   // Foreign keys
-  projectId String? @map("project_id")
-  parentId  String? @map("parent_id")
-  userId    String  @map("user_id")
+  projectId   String? @map("project_id")
+  parentId    String? @map("parent_id")
+  userId      String  @map("user_id")
+  workspaceId String? @map("workspace_id")
 
   // Relations
   project      Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   parent       Task?          @relation("SubtaskRelation", fields: [parentId], references: [id], onDelete: SetNull)
   subtasks     Task[]         @relation("SubtaskRelation")
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace    Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   tags         TaskTag[]
   comments     Comment[]
   attachments  Attachment[]
@@ -221,6 +286,7 @@ model Task {
   @@index([userId, deletedAt])
   @@index([projectId])
   @@index([parentId])
+  @@index([workspaceId])
   @@index([userId, isFavorite])
   @@index([userId, isPinned])
   @@map("tasks")
@@ -250,14 +316,18 @@ model Project {
   updatedAt   DateTime      @updatedAt @map("updated_at")
   deletedAt   DateTime?     @map("deleted_at")
 
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String  @map("user_id")
+  workspaceId String? @map("workspace_id")
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   tasks Task[]
   notes Note[]
 
   @@index([userId, status])
   @@index([userId, deletedAt])
+  @@index([workspaceId])
   @@map("projects")
 }
 
@@ -266,13 +336,17 @@ model Tag {
   name  String
   color String @default("#6366f1")
 
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String  @map("user_id")
+  workspaceId String? @map("workspace_id")
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   tasks    TaskTag[]
   noteTags NoteTag[]
 
   @@unique([userId, name])
+  @@index([workspaceId])
   @@map("tags")
 }
 
@@ -346,16 +420,19 @@ model Note {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  projectId String? @map("project_id")
-  userId    String  @map("user_id")
+  projectId   String? @map("project_id")
+  userId      String  @map("user_id")
+  workspaceId String? @map("workspace_id")
 
-  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   tags NoteTag[]
 
   @@index([userId, deletedAt])
   @@index([userId, isPinned])
+  @@index([workspaceId])
   @@map("notes")
 }
 
@@ -374,12 +451,16 @@ model Habit {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String  @map("user_id")
+  workspaceId String? @map("workspace_id")
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   completions HabitCompletion[]
 
   @@index([userId, isActive])
+  @@index([workspaceId])
   @@map("habits")
 }
 
@@ -408,13 +489,17 @@ model Goal {
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String  @map("user_id")
+  workspaceId String? @map("workspace_id")
+  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   milestones GoalMilestone[]
   linkedTasks GoalTask[]
 
   @@index([userId, status])
+  @@index([workspaceId])
   @@map("goals")
 }
 
@@ -455,13 +540,16 @@ model CalendarEvent {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  taskId String? @unique @map("task_id")
-  userId String  @map("user_id")
+  taskId      String? @unique @map("task_id")
+  userId      String  @map("user_id")
+  workspaceId String? @map("workspace_id")
 
-  task Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task      Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([userId, startTime, endTime])
+  @@index([workspaceId])
   @@map("calendar_events")
 }
 

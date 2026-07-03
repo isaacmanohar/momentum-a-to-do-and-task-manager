@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 // import { AiAssistantPanel } from '../AiAssistantPanel';
 import { CreateProjectModal } from '../modals/CreateProjectModal';
 import { CreateTaskModal } from '../modals/CreateTaskModal';
+import { CreateHabitModal } from '../modals/CreateHabitModal';
+import { CreateGoalModal } from '../modals/CreateGoalModal';
 
 export function AppShell() {
   const { isAuthenticated } = useAuthStore();
@@ -37,6 +39,8 @@ export function AppShell() {
       {/* <AiAssistantPanel /> */}
       <CreateTaskModal />
       <CreateProjectModal />
+      <CreateHabitModal />
+      <CreateGoalModal />
     </div>
   );
 }
