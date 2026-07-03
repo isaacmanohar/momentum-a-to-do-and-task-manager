@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
-import { User, Shield, Palette, Upload, Monitor, Moon, Sun, Smartphone, Laptop, SmartphoneNfc, Key, LayoutTemplate, Type, BoxSelect, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { User, Shield, Palette, Upload, Monitor, Moon, Sun, Smartphone, Laptop, Key, Type, BoxSelect, Loader2, Building, Plus, Mail, Crown, Check, Users } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../../lib/api-client';
+import { useWorkspaceStore } from '../../../stores';
+import toast from 'react-hot-toast';
 
-type Tab = 'profile' | 'account' | 'appearance';
+type Tab = 'profile' | 'account' | 'appearance' | 'workspaces';
 
 export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('profile');
+  const { setActiveWorkspace, activeWorkspaceId } = useWorkspaceStore();
   const queryClient = useQueryClient();
 
   const { data: user, isLoading } = useQuery({
@@ -76,6 +79,16 @@ export function SettingsPage() {
             <Palette size={18} />
             Appearance
           </button>
+          <button
+            onClick={() => setActiveTab('workspaces')}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
+              activeTab === 'workspaces' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <Building size={18} />
+            Workspaces
+          </button>
         </nav>
       </div>
 
@@ -84,6 +97,7 @@ export function SettingsPage() {
         {activeTab === 'profile' && <ProfileSettings user={user} updateProfile={updateProfile} />}
         {activeTab === 'account' && <AccountSettings />}
         {activeTab === 'appearance' && <AppearanceSettings user={user} updateProfile={updateProfile} />}
+        {activeTab === 'workspaces' && <WorkspacesSettings activeWorkspaceId={activeWorkspaceId} setActiveWorkspace={setActiveWorkspace} />}
       </div>
     </div>
   );
@@ -578,5 +592,190 @@ function AppearanceSettings({ user, updateProfile }: { user: any, updateProfile:
         </button>
       </div>
     </form>
+  );
+}
+
+function WorkspacesSettings({ activeWorkspaceId, setActiveWorkspace }: { activeWorkspaceId: string | null, setActiveWorkspace: (id: string) => void }) {
+  const queryClient = useQueryClient();
+  const [showCreate, setShowCreate] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createDesc, setCreateDesc] = useState('');
+  const [inviteEmail, setInviteEmail] = useState<Record<string, string>>({});
+  const [inviteRole, setInviteRole] = useState<Record<string, string>>({});
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['workspaces'],
+    queryFn: async () => {
+      const res = await api.get('/workspaces');
+      return res.data?.data || [];
+    },
+  });
+
+  const workspaces: any[] = data || [];
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const res = await api.post('/workspaces', { name: createName, description: createDesc });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success('Workspace created!');
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      setShowCreate(false);
+      setCreateName('');
+      setCreateDesc('');
+    },
+    onError: () => toast.error('Failed to create workspace'),
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: async ({ workspaceId, email, role }: { workspaceId: string; email: string; role: string }) => {
+      const res = await api.post(`/workspaces/${workspaceId}/invite`, { email, role });
+      return res.data;
+    },
+    onSuccess: () => toast.success('Invite sent!'),
+    onError: () => toast.error('Failed to send invite'),
+  });
+
+  const roleIcon: Record<string, React.ReactNode> = {
+    OWNER: <Crown size={12} className="text-yellow-500" />,
+    ADMIN: <Shield size={12} className="text-blue-500" />,
+    MEMBER: <User size={12} className="text-green-500" />,
+    VIEWER: <Users size={12} className="text-muted-foreground" />,
+  };
+
+  if (isLoading) return <div className="flex items-center justify-center h-40"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-foreground">Workspaces</h3>
+          <p className="text-sm text-muted-foreground mt-1">Manage your personal and team workspaces.</p>
+        </div>
+        <button
+          onClick={() => setShowCreate(!showCreate)}
+          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+        >
+          <Plus size={16} />
+          New Workspace
+        </button>
+      </div>
+
+      {showCreate && (
+        <div className="border rounded-lg p-6 bg-background space-y-4">
+          <h4 className="font-semibold">Create Team Workspace</h4>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Workspace Name</label>
+            <input
+              value={createName}
+              onChange={e => setCreateName(e.target.value)}
+              placeholder="e.g. Design Team, Engineering, Marketing..."
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Description (optional)</label>
+            <input
+              value={createDesc}
+              onChange={e => setCreateDesc(e.target.value)}
+              placeholder="What is this workspace for?"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => createMutation.mutate()}
+              disabled={!createName.trim() || createMutation.isPending}
+              className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
+            >
+              {createMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+              Create Workspace
+            </button>
+            <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm border rounded-md hover:bg-muted">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {workspaces.map((ws: any) => (
+          <div key={ws.id} className={cn(
+            "border rounded-lg p-5 bg-background space-y-4 transition-all",
+            activeWorkspaceId === ws.id && "border-primary/50 ring-1 ring-primary/20"
+          )}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  {ws.isPersonal ? <User size={20} /> : <Building size={20} />}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-sm">{ws.name}</h4>
+                    {ws.isPersonal && <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Personal</span>}
+                    {activeWorkspaceId === ws.id && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Active</span>}
+                  </div>
+                  {ws.description && <p className="text-xs text-muted-foreground">{ws.description}</p>}
+                </div>
+              </div>
+              {activeWorkspaceId !== ws.id && (
+                <button
+                  onClick={() => setActiveWorkspace(ws.id)}
+                  className="text-xs px-3 py-1.5 border rounded-md hover:bg-accent transition-colors"
+                >
+                  Switch to this
+                </button>
+              )}
+            </div>
+
+            {/* Members */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Members ({ws.members?.length || 0})</p>
+              <div className="flex flex-wrap gap-2">
+                {ws.members?.map((m: any) => (
+                  <div key={m.id} className="flex items-center gap-1.5 bg-muted rounded-full px-3 py-1 text-xs">
+                    {roleIcon[m.role]}
+                    <span className="font-medium">{m.user?.name || m.user?.email}</span>
+                    <span className="text-muted-foreground">• {m.role}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Invite (only for non-personal workspaces) */}
+            {!ws.isPersonal && (
+              <div className="border-t pt-4">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Invite a teammate</p>
+                <div className="flex gap-2">
+                  <input
+                    value={inviteEmail[ws.id] || ''}
+                    onChange={e => setInviteEmail(prev => ({ ...prev, [ws.id]: e.target.value }))}
+                    placeholder="teammate@email.com"
+                    type="email"
+                    className="flex-1 rounded-md border bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+                  />
+                  <select
+                    value={inviteRole[ws.id] || 'MEMBER'}
+                    onChange={e => setInviteRole(prev => ({ ...prev, [ws.id]: e.target.value }))}
+                    className="rounded-md border bg-background px-2 py-1.5 text-xs focus:border-primary focus:outline-none"
+                  >
+                    <option value="VIEWER">Viewer</option>
+                    <option value="MEMBER">Member</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                  <button
+                    onClick={() => inviteMutation.mutate({ workspaceId: ws.id, email: inviteEmail[ws.id] || '', role: inviteRole[ws.id] || 'MEMBER' })}
+                    disabled={!inviteEmail[ws.id] || inviteMutation.isPending}
+                    className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    <Mail size={14} />
+                    Invite
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
