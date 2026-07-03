@@ -135,6 +135,7 @@ export async function createTask(userId: string, input: CreateTaskInput) {
   const task = await prisma.task.create({
     data: {
       ...taskData,
+      richNotes: taskData.richNotes !== undefined ? (taskData.richNotes as any) : undefined,
       userId,
       sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
       dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
@@ -179,6 +180,7 @@ export async function updateTask(userId: string, taskId: string, input: UpdateTa
   // Handle completion
   const updateData: Prisma.TaskUpdateInput = {
     ...taskData,
+    richNotes: taskData.richNotes !== undefined ? (taskData.richNotes as any) : undefined,
     dueDate: taskData.dueDate !== undefined
       ? (taskData.dueDate ? new Date(taskData.dueDate) : null)
       : undefined,
