@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api-client';
 
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
+
 export function Sidebar() {
   const { sidebarOpen, sidebarCollapsed, toggleSidebarCollapse, setProjectModalOpen } = useUIStore();
   
@@ -48,21 +50,24 @@ export function Sidebar() {
         sidebarCollapsed ? "w-16" : "w-64"
       )}
     >
-      <div className="flex h-14 items-center justify-between px-4 py-4">
-        {!sidebarCollapsed && (
-          <div className="flex items-center gap-3 px-2 h-16 transition-colors">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center">
-              <span className="text-white font-bold text-lg leading-none pt-0.5">M</span>
+      <div className="flex flex-col gap-2 p-4 border-b">
+        <div className="flex h-8 items-center justify-between">
+          {!sidebarCollapsed && (
+            <div className="flex items-center gap-2 transition-colors">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 shadow-[0_0_10px_rgba(168,85,247,0.4)] flex items-center justify-center">
+                <span className="text-white font-bold text-sm leading-none pt-0.5">M</span>
+              </div>
+              <span className="font-bold tracking-tight">Momentum</span>
             </div>
-            <span className="font-bold text-lg tracking-tight">Momentum</span>
-          </div>
-        )}
-        <button 
-          onClick={toggleSidebarCollapse}
-          className="rounded p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ml-auto"
-        >
-          {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+          )}
+          <button 
+            onClick={toggleSidebarCollapse}
+            className="rounded p-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ml-auto"
+          >
+            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        </div>
+        <WorkspaceSwitcher collapsed={sidebarCollapsed} />
       </div>
 
       <div className="flex-1 overflow-y-auto py-4">

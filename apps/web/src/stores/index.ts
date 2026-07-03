@@ -3,6 +3,7 @@
 // Global client-side state management
 // =============================================================
 
+export * from './workspace';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

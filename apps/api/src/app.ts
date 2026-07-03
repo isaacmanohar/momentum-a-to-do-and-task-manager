@@ -24,6 +24,7 @@ import analyticsRoutes from './features/analytics/analytics.routes.js';
 import aiRoutes from './features/ai/ai.routes.js';
 import gamificationRoutes from './features/gamification/gamification.routes.js';
 import tagRoutes from './features/tags/tag.routes.js';
+import workspaceRoutes from './features/workspaces/workspace.routes.js';
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.get('/api/health', (_req, res) => {
 // ---- API Routes ----
 
 app.use('/api/auth', authRoutes);
+app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/notes', noteRoutes);

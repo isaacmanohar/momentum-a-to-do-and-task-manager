@@ -1,8 +1,10 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { useAuthStore, useUIStore } from '@/stores';
+import { useAuthStore, useUIStore, useWorkspaceStore } from '@/stores';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api-client';
 // import { CommandPalette } from '../CommandPalette';
 // import { AiAssistantPanel } from '../AiAssistantPanel';
 import { CreateProjectModal } from '../modals/CreateProjectModal';
@@ -13,6 +15,21 @@ import { CreateGoalModal } from '../modals/CreateGoalModal';
 export function AppShell() {
   const { isAuthenticated } = useAuthStore();
   const { sidebarOpen, sidebarCollapsed } = useUIStore();
+  const { setWorkspaces } = useWorkspaceStore();
+
+  useQuery({
+    queryKey: ['workspaces'],
+    queryFn: async () => {
+      const res = await api.get('/workspaces');
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data?.data) {
+        setWorkspaces(data.data);
+      }
+    },
+    enabled: isAuthenticated,
+  });
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

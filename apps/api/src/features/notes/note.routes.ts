@@ -90,7 +90,8 @@ async function getNote(req: Request, res: Response, next: NextFunction) {
     });
     if (!note) throw new NotFoundError('Note');
 
-    res.json({ ...note, tags: note.tags.map((t) => t.tag) });
+    const noteAny = note as any;
+    res.json({ ...note, tags: noteAny.tags?.map((t: any) => t.tag) ?? [] });
   } catch (error) { next(error); }
 }
 
@@ -118,7 +119,7 @@ async function createNote(req: Request, res: Response, next: NextFunction) {
       }
     }
 
-    res.status(201).json({ ...note, tags: note.tags.map((t) => t.tag) });
+    res.status(201).json({ ...note, tags: (note as any).tags?.map((t: any) => t.tag) ?? [] });
   } catch (error) { next(error); }
 }
 
@@ -141,7 +142,7 @@ async function updateNote(req: Request, res: Response, next: NextFunction) {
       },
     });
 
-    res.json({ ...note, tags: note.tags.map((t) => t.tag) });
+    res.json({ ...note, tags: (note as any).tags?.map((t: any) => t.tag) ?? [] });
   } catch (error) { next(error); }
 }
 
