@@ -40,7 +40,10 @@ export function setupSocket(httpServer: HttpServer): SocketServer {
 
   io.on('connection', (socket) => {
     const userId = socket.data.user?.userId;
-    if (!userId) return socket.disconnect();
+    if (!userId) {
+      socket.disconnect();
+      return;
+    }
 
     console.log(`🔌 User connected: ${userId}`);
 

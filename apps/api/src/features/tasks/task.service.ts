@@ -323,7 +323,7 @@ export async function duplicateTask(userId: string, taskId: string) {
     data: {
       title: `${original.title} (copy)`,
       description: original.description,
-      richNotes: original.richNotes || undefined,
+      richNotes: (original.richNotes as any) || undefined,
       status: 'TODO',
       priority: original.priority,
       energyLevel: original.energyLevel,
