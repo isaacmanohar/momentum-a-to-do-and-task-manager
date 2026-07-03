@@ -597,30 +597,25 @@ function AppearanceSettings({ user, updateProfile }: { user: any, updateProfile:
 
 function WorkspacesSettings({ activeWorkspaceId, setActiveWorkspace }: { activeWorkspaceId: string | null, setActiveWorkspace: (id: string) => void }) {
   const queryClient = useQueryClient();
+  const { workspaces, setWorkspaces } = useWorkspaceStore();
   const [showCreate, setShowCreate] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createDesc, setCreateDesc] = useState('');
   const [inviteEmail, setInviteEmail] = useState<Record<string, string>>({});
   const [inviteRole, setInviteRole] = useState<Record<string, string>>({});
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['workspaces'],
-    queryFn: async () => {
-      const res = await api.get('/workspaces');
-      return res.data?.data || [];
-    },
-  });
-
-  const workspaces: any[] = data || [];
-
   const createMutation = useMutation({
     mutationFn: async () => {
       const res = await api.post('/workspaces', { name: createName, description: createDesc });
-      return res.data;
+      return res.data?.data;
     },
-    onSuccess: () => {
+    onSuccess: async (newWorkspace) => {
       toast.success('Workspace created!');
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      // Refresh workspace list from API and update store
+      try {
+        const res = await api.get('/workspaces');
+        if (res.data?.data) setWorkspaces(res.data.data);
+      } catch {}
       setShowCreate(false);
       setCreateName('');
       setCreateDesc('');
@@ -644,7 +639,7 @@ function WorkspacesSettings({ activeWorkspaceId, setActiveWorkspace }: { activeW
     VIEWER: <Users size={12} className="text-muted-foreground" />,
   };
 
-  if (isLoading) return <div className="flex items-center justify-center h-40"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (!workspaces) return <div className="flex items-center justify-center h-40"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
     <div className="space-y-8 animate-fade-in">
