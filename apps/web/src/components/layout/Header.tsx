@@ -1,9 +1,26 @@
-import { Menu, Search, Bell, Plus } from 'lucide-react';
+import { Menu, Search, Bell, Plus, Settings, LogOut, User as UserIcon } from 'lucide-react';
 import { useUIStore, useAuthStore } from '@/stores';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const { toggleSidebar, setCommandPaletteOpen, setTaskModalOpen } = useUIStore();
   const { user, logout } = useAuthStore();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,11 +56,13 @@ export function Header() {
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive"></span>
           </button>
 
-          <div className="relative ml-2">
+          <div className="relative ml-2" ref={dropdownRef}>
             <button 
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-muted border overflow-hidden cursor-pointer"
-              onClick={() => logout()} // Temporarily attach logout here for testing
-              title="Click to logout"
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-full bg-muted border overflow-hidden cursor-pointer transition-all hover:ring-2 hover:ring-primary/50",
+                dropdownOpen && "ring-2 ring-primary"
+              )}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
             >
               {user?.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
@@ -51,6 +70,40 @@ export function Header() {
                 <span className="text-xs font-semibold">{user?.name?.charAt(0) || 'U'}</span>
               )}
             </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg border bg-popover text-popover-foreground shadow-md animate-in fade-in zoom-in-95">
+                <div className="p-3 border-b">
+                  <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                </div>
+                <div className="p-1">
+                  <button 
+                    onClick={() => { setDropdownOpen(false); navigate('/app/settings'); }}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <UserIcon size={16} />
+                    Profile
+                  </button>
+                  <button 
+                    onClick={() => { setDropdownOpen(false); navigate('/app/settings'); }}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </button>
+                </div>
+                <div className="p-1 border-t">
+                  <button 
+                    onClick={() => { setDropdownOpen(false); logout(); }}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
+                  >
+                    <LogOut size={16} />
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
